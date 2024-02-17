@@ -8,7 +8,6 @@ from .database import Base
 
 class Tasks(Base):
     __tablename__ = "tasks"
-
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
     description = Column(String, nullable=False)
@@ -20,6 +19,7 @@ class Tasks(Base):
     pocName = Column(String, nullable=False)
     pocDiscordName = Column(String, nullable=False)
     hasData = Column(Boolean, server_default='FALSE', nullable=False)
+    taskCode = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
 
@@ -38,13 +38,16 @@ class Teams(Base):
                         nullable=False, server_default=text('now()'))
     captainCode = Column(String, nullable=True, unique=True)
     taskId = Column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)
+    task = relationship("Tasks")
 
 
 class Members(Base):
     __tablename__ = "members"
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
+    discordName = Column(String, nullable=False)
     skillsets = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     teamId = Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=True)
+    team = relationship("Teams")

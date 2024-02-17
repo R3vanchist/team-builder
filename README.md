@@ -6,4 +6,6 @@
     - teams/team
     - members/member
 2. Postgres setup (Alembic)
-3. Not creating for some reason
+3. 
+
+## How To Run

@@ -2,26 +2,6 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
-# Members
-class CreateMember(BaseModel):
-    name: str
-    skillsets: str
-
-class GetMember(BaseModel):
-    skillsets: str
-    teamName: Optional[str]
-
-class ReturnMember(BaseModel):
-    id: int
-    name: str
-    skillsets: str
-    class Config:
-        orm_mode = True
-
-class UpdateMember(BaseModel):
-    name: Optional[str]
-    skillsets: Optional[str]
-
 # Tasks
 class CreateTask(BaseModel):
     description: str
@@ -61,31 +41,55 @@ class ReturnTask(BaseModel):
 
 class UpdateTask(BaseModel):
     taskCode: str
-    description: Optional[str]
-    classification: Optional[str]
-    preferredSkillsets: Optional[str]
-    desiredDeliverable: Optional[str]
-    organization: Optional[str]
-    location: Optional[str]
-    pocName: Optional[str]
-    pocDiscordName: Optional[str]
-    dataSupplied: Optional[bool]
+    description: Optional[str] = None
+    classification: Optional[str] = None
+    preferredSkillsets: Optional[str] = None
+    desiredDeliverable: Optional[str] = None
+    organization: Optional[str] = None
+    location: Optional[str] = None
+    pocName: Optional[str] = None
+    pocDiscordName: Optional[str] = None
+    dataSupplied: Optional[bool] = None
+
+# Members
+class CreateMember(BaseModel):
+    name: str
+    discordName: str
+    skillsets: str
+    teamId: Optional[int] = None
+
+class ReturnMember(BaseModel):
+    id: int
+    name: str
+    discordName: str
+    skillsets: str
+    class Config:
+        orm_mode = True
+
+class UpdateMember(BaseModel):
+    name: Optional[str] = None
+    skillsets: Optional[str] = None
+
+class DeleteRequestBody(BaseModel):
+    captainCode: str
+    teamId: int
 
 # Teams
 class CreateTeam(BaseModel):
+    name: str
     captainDiscordName: str
     gitRepo: str
-    task: Optional[str]
+    task: Optional[str] = None
     location: str
     preferredWorkTime: str
     classification: str
     preferredSkillsets: str
-    member: ReturnMember
 
 class GetTeam(BaseModel):
+    name: str
     captainDiscordName: str
     gitRepo: str
-    task: Optional[str]
+    task: Optional[str] = None
     location: str
     preferredWorkTime: str
     classification: str
@@ -93,9 +97,10 @@ class GetTeam(BaseModel):
     member: ReturnMember
 
 class ReturnTeam(BaseModel):
+    name: str
     captainDiscordName: str
     gitRepo: str
-    task: Optional[str]
+    task: Optional[str] = None
     location: str
     preferredWorkTime: str
     classification: str
@@ -106,12 +111,20 @@ class ReturnTeam(BaseModel):
         orm_mode = True
 
 class UpdateTeam(BaseModel):
+    name: Optional[str] = None
     captainCode: str
-    captainDiscordName: Optional[str]
-    gitRepo: Optional[str]
-    task: Optional[str]
-    location: Optional[str]
-    preferredWorkTime: Optional[str]
-    classification: Optional[str]
-    preferredSkillsets: Optional[str]
-    member: Optional[ReturnMember]
+    captainDiscordName: Optional[str] = None
+    gitRepo: Optional[str] = None
+    task: Optional[str] = None
+    location: Optional[str] = None
+    preferredWorkTime: Optional[str] = None
+    classification: Optional[str] = None
+    preferredSkillsets: Optional[str] = None
+    member: Optional[ReturnMember] = None
+
+class GetMember(BaseModel):
+    id: int
+    name: str
+    discordName: str
+    skillsets: str
+    teamName: Optional[ReturnTeam] = None
