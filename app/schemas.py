@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 from datetime import datetime
 from typing import Optional
 
 # Tasks
 class CreateTask(BaseModel):
     description: str
-    classification: str
+    classificationLevel: str
     preferredSkillsets: str
     desiredDeliverable: str
     organization: str
@@ -16,7 +16,7 @@ class CreateTask(BaseModel):
 
 class GetTask(BaseModel):
     description: str
-    classification: str
+    classificationLevel: str
     preferredSkillsets: str
     desiredDeliverable: str
     organization: str
@@ -27,7 +27,7 @@ class GetTask(BaseModel):
 
 class ReturnTask(BaseModel):
     description: str
-    classification: str
+    classificationLevel: str
     preferredSkillsets: str
     desiredDeliverable: str
     organization: str
@@ -42,7 +42,7 @@ class ReturnTask(BaseModel):
 class UpdateTask(BaseModel):
     taskCode: str
     description: Optional[str] = None
-    classification: Optional[str] = None
+    classificationLevel: Optional[str] = None
     preferredSkillsets: Optional[str] = None
     desiredDeliverable: Optional[str] = None
     organization: Optional[str] = None
@@ -56,57 +56,75 @@ class CreateMember(BaseModel):
     name: str
     discordName: str
     skillsets: str
-    teamId: Optional[int] = None
 
 class ReturnMember(BaseModel):
     id: int
     name: str
     discordName: str
     skillsets: str
+    teamId: int
+
     class Config:
         orm_mode = True
 
-class UpdateMember(BaseModel):
-    name: Optional[str] = None
-    skillsets: Optional[str] = None
-
-class DeleteRequestBody(BaseModel):
+class Delete(BaseModel):
     captainCode: str
     teamId: int
 
 # Teams
+class CreateTeamCaptain(CreateMember):
+    pass
 class CreateTeam(BaseModel):
     name: str
-    captainDiscordName: str
+    captainDiscordName: Optional[str] = None 
     gitRepo: str
     task: Optional[str] = None
     location: str
     preferredWorkTime: str
-    classification: str
+    classificationLevel: str
     preferredSkillsets: str
+    captain: CreateTeamCaptain
 
-class GetTeam(BaseModel):
-    name: str
-    captainDiscordName: str
-    gitRepo: str
-    task: Optional[str] = None
-    location: str
-    preferredWorkTime: str
-    classification: str
-    preferredSkillsets: str
-    member: ReturnMember
+    @root_validator(pre=True)
+    def populate_captain_discord_name(cls, values):
+        captain = values.get('captain')
+        if captain:
+            # Access the discordName using dictionary key access
+            values['captainDiscordName'] = captain.get('discordName', '')
+        return values
+    
+
+class ReturnCaptain(ReturnMember):
+    pass
 
 class ReturnTeam(BaseModel):
+    id: int
     name: str
     captainDiscordName: str
     gitRepo: str
     task: Optional[str] = None
     location: str
     preferredWorkTime: str
-    classification: str
+    classificationLevel: str
     preferredSkillsets: str
-    captainCode: str
+    # captainCode showing back up to the user is an issue
+    captainCode: Optional[str] = None
+    member: ReturnCaptain
+    class Config:
+        orm_mode = True
+
+class GetTeams(BaseModel):
+    id: int
+    name: str
+    captainDiscordName: str
+    gitRepo: str
+    task: Optional[str] = None
+    location: str
+    preferredWorkTime: str
+    classificationLevel: str
+    preferredSkillsets: str
     member: ReturnMember
+
     class Config:
         orm_mode = True
 
@@ -118,7 +136,7 @@ class UpdateTeam(BaseModel):
     task: Optional[str] = None
     location: Optional[str] = None
     preferredWorkTime: Optional[str] = None
-    classification: Optional[str] = None
+    classificationLevel: Optional[str] = None
     preferredSkillsets: Optional[str] = None
     member: Optional[ReturnMember] = None
 

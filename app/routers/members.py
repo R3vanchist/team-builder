@@ -18,15 +18,6 @@ def getMembers(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, se
     members = db.query(models.Members).all()
     return members
 
-# Create members
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.CreateMember)
-def createMember(member: schemas.CreateMember, db: Session = Depends(get_db)):
-    newMember = models.Members(**member.dict())
-    db.add(newMember)
-    db.commit()
-    db.refresh(newMember)
-    return newMember
-
 # Get members by id
 @router.get("/{id}", response_model=schemas.ReturnMember)
 def getMember(id: int, db: Session = Depends(get_db)):
@@ -38,7 +29,7 @@ def getMember(id: int, db: Session = Depends(get_db)):
 
 # Delete a member
 @router.put("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def deleteMember(id: int, request_body: schemas.DeleteRequestBody = Body(...), db: Session = Depends(get_db)):
+def deleteMember(id: int, request_body: schemas.Delete = Body(...), db: Session = Depends(get_db)):
     memberQuery = db.query(models.Members).filter(models.Members.id == id)
     member = memberQuery.first()
 

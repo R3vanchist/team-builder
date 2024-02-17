@@ -28,6 +28,7 @@ class Teams(Base):
     __tablename__ = "teams"
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
+    captainDiscordName = Column(String, nullable=False)
     gitRepo = Column(String, nullable=True)
     location = Column(String, nullable=False)
     preferredWorkTime = Column(String, nullable=False)
@@ -37,7 +38,7 @@ class Teams(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     captainCode = Column(String, nullable=True, unique=True)
-    taskId = Column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)
+    task_id = Column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)
     task = relationship("Tasks")
 
 
@@ -49,5 +50,5 @@ class Members(Base):
     skillsets = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
-    teamId = Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=True)
+    team_id = Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False)
     team = relationship("Teams")

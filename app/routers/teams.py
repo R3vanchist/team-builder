@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional
-
+import random
+import string
 from sqlalchemy import func
 from sqlalchemy.sql.functions import func
 from .. import models, schemas
@@ -13,26 +14,76 @@ router = APIRouter(
 )
 
 # Get all teams
-@router.get("/", response_model=List[schemas.GetTeam])
-def read_root():
-    return {"Hello": "World"}
+@router.get("/", response_model=List[schemas.GetTeams])
+def getTeams(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    teams = db.query(models.Teams, models.Members).join(models.Members, models.Members.team_id == models.Teams.id, isouter=True).filter(models.Teams.name.contains(search)).limit(limit).offset(skip)
+    print(teams)
+    return teams
 
 # Create teams
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.CreateTeam)
-def read_root():
-    return {"Hello": "World"}
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnTeam)
+def createTeam(team: schemas.CreateTeam, db: Session = Depends(get_db)):
+    # Function to generate a captainCode
+    def captainCodeGenerator(length=6):
+        chars = string.ascii_letters
+        captainCode = ''.join(random.choice(chars) for _ in range(length))
+        return captainCode
+    captainCode = captainCodeGenerator(length=6)
+
+    # Create a new team entry
+    newTeamData = team.dict(exclude={"captain"})
+    newTeam = models.Teams(**newTeamData, captainCode=captainCode)
+    db.add(newTeam)
+    db.commit()
+    db.refresh(newTeam)
+
+    captainData = team.captain.dict()
+    newMember = models.Members(**captainData, team_id=newTeam.id)
+    db.add(newMember)
+    db.commit()
+    db.refresh(newMember)
+
+
+    return newTeam 
 
 # Get team by id
-@router.get("/{id}", response_model=schemas.GetTeam)
-def read_root():
-    return {"Hello": "World"}
+@router.get("/{id}", response_model=schemas.ReturnTeam)
+def getTeam(id: int, db: Session = Depends(get_db)):
+    team = db.query(models.Teams).join(models.Members, models.Members.team_id == models.Teams.id, isouter=True).filter(models.Teams.id == id).first()
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Team with id: {id} does not exist.")
+    return team
 
 # Update team by id 
-@router.put("/", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UpdateTeam)
-def read_root():
+@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UpdateTeam)
+def updateTeam():
     return {"Hello": "World"}
 
 # Delete a team
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def read_root():
-    return {"Hello": "World"}
+@router.put("/delete/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def deleteMember(id: int, request_body: schemas.Delete = Body(...), db: Session = Depends(get_db)):
+    teamQuery = db.query(models.Teams).filter(models.Teams.id == id)
+    team = teamQuery.first()
+
+    captainCodeQuery = db.query(models.Teams.captainCode).filter(models.Teams.id == id)
+    captainCodeResult = captainCodeQuery.first()
+    captainCode = captainCodeResult[0]
+
+    if team is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Team with id: {id} does not exist.")
+
+    if captainCode != request_body.captainCode:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid captain code.")
+
+    teamQuery.delete(synchronize_session=False)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+# Create members
+@router.post("/{id}/join", status_code=status.HTTP_201_CREATED, response_model=schemas.CreateMember)
+def createMember(id: int, member: schemas.CreateMember, db: Session = Depends(get_db)):
+    newMember = models.Members(**member.dict(), team_id=id)
+    db.add(newMember)
+    db.commit()
+    db.refresh(newMember)
+    return newMember
