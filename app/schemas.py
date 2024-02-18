@@ -4,6 +4,7 @@ from typing import Optional, List
 
 # Tasks
 class CreateTask(BaseModel):
+    name: str
     description: str
     classificationLevel: str
     preferredSkillsets: str
@@ -12,18 +13,13 @@ class CreateTask(BaseModel):
     location: str
     pocName: str
     pocDiscordName: str
-    dataSupplied: bool = False
+    hasData: Optional[bool] = False
+    class Config:
+        orm_mode = True
 
-class GetTask(BaseModel):
-    description: str
-    classificationLevel: str
-    preferredSkillsets: str
-    desiredDeliverable: str
-    organization: str
-    location: str
-    pocName: str
-    pocDiscordName: str
-    dataSupplied: bool = False
+class DeleteTask(BaseModel):
+    taskCode: str
+    task_id: int
 
 class ReturnTask(BaseModel):
     description: str
@@ -34,10 +30,13 @@ class ReturnTask(BaseModel):
     location: str
     pocName: str
     pocDiscordName: str
-    taskCode: str
-    dataSupplied: bool
+    hasData: bool
     class Config:
         orm_mode = True
+
+class ReturnCreatedTask(ReturnTask):
+    taskCode: str
+    pass
 
 class UpdateTask(BaseModel):
     taskCode: str
@@ -51,12 +50,32 @@ class UpdateTask(BaseModel):
     pocDiscordName: Optional[str] = None
     dataSupplied: Optional[bool] = None
 
+class JoinTask(BaseModel):
+    team_id: int
+
 # Members
 class CreateMember(BaseModel):
     name: str
     discordName: str
     skillsets: str
 
+class ReturnMember(BaseModel):
+    id: int
+    name: str
+    discordName: str
+    skillsets: str
+    team_id: int
+    teamName: Optional[str] = None
+    class Config:
+        orm_mode = True
+
+class CreateTeamCaptain(CreateMember):
+    pass
+
+class ReturnCaptain(ReturnMember):
+    pass
+
+# Teams
 class ReturnTeam(BaseModel):
     id: int
     name: str
@@ -68,28 +87,13 @@ class ReturnTeam(BaseModel):
     classificationLevel: str
     preferredSkillsets: str
     needsMembers: bool
-    
     class Config:
         orm_mode = True
 
-class ReturnMember(BaseModel):
-    id: int
-    name: str
-    discordName: str
-    skillsets: str
-    team_id: int
-    teamName: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-class Delete(BaseModel):
+class DeleteTeam(BaseModel):
     captainCode: str
     team_id: int
 
-# Teams
-class CreateTeamCaptain(CreateMember):
-    pass
 class CreateTeam(BaseModel):
     name: str
     captainDiscordName: Optional[str] = None 
@@ -109,10 +113,6 @@ class CreateTeam(BaseModel):
             values['captainDiscordName'] = captain.get('discordName', '')
         return values
     
-
-class ReturnCaptain(ReturnMember):
-    pass
-
 class ReturnCreatedTeam(ReturnTeam):
     captainCode: str
     pass

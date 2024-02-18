@@ -35,7 +35,7 @@ def getMember(id: int, db: Session = Depends(get_db)):
 
 # Delete a member
 @router.put("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def deleteMember(id: int, request_body: schemas.Delete = Body(...), db: Session = Depends(get_db)):
+def deleteMember(id: int, request_body: schemas.DeleteTeam = Body(...), db: Session = Depends(get_db)):
     memberQuery = db.query(models.Members).filter(models.Members.id == id)
     member = memberQuery.first()
 
