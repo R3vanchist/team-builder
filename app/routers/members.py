@@ -13,18 +13,24 @@ router = APIRouter(
 )
 
 # Get all members
-@router.get("/", response_model=List[schemas.GetMember])
+@router.get("/", response_model=List[schemas.ReturnMember])
 def getMembers(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    members = db.query(models.Members).all()
+    members = db.query(models.Members).filter(models.Members.name.contains(search)).limit(limit).offset(skip).all()
+
     return members
 
 # Get members by id
 @router.get("/{id}", response_model=schemas.ReturnMember)
 def getMember(id: int, db: Session = Depends(get_db)):
     member = db.query(models.Members).filter(models.Members.id == id).first()
+    teamNameQuery = db.query(models.Teams.name).join(models.Members, models.Members.team_id == models.Teams.id, isouter=True).first()
+    teamName = teamNameQuery[0]
+    teamNamejson = {
+        "teamName": teamName
+    }
     if not member:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {id} does not exist.")
-    return member
+    return member, teamNamejson
 
 
 # Delete a member

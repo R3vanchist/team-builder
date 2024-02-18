@@ -5,6 +5,6 @@
     - tasks/task
     - teams/team
 2. Postgres setup (Alembic)
-3. fix getTeams
+3. fix updateTeams
 
 ## How To Run

@@ -1,6 +1,6 @@
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, root_validator, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 # Tasks
 class CreateTask(BaseModel):
@@ -57,19 +57,35 @@ class CreateMember(BaseModel):
     discordName: str
     skillsets: str
 
+class ReturnTeam(BaseModel):
+    id: int
+    name: str
+    captainDiscordName: str
+    gitRepo: str
+    task: Optional[str] = None
+    location: str
+    preferredWorkTime: str
+    classificationLevel: str
+    preferredSkillsets: str
+    needsMembers: bool
+    
+    class Config:
+        orm_mode = True
+
 class ReturnMember(BaseModel):
     id: int
     name: str
     discordName: str
     skillsets: str
-    teamId: int
+    team_id: int
+    teamName: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 class Delete(BaseModel):
     captainCode: str
-    teamId: int
+    team_id: int
 
 # Teams
 class CreateTeamCaptain(CreateMember):
@@ -97,52 +113,22 @@ class CreateTeam(BaseModel):
 class ReturnCaptain(ReturnMember):
     pass
 
-class ReturnTeam(BaseModel):
-    id: int
-    name: str
-    captainDiscordName: str
-    gitRepo: str
-    task: Optional[str] = None
-    location: str
-    preferredWorkTime: str
-    classificationLevel: str
-    preferredSkillsets: str
-    # captainCode showing back up to the user is an issue
-    captainCode: Optional[str] = None
-    member: ReturnCaptain
-    class Config:
-        orm_mode = True
-
-class GetTeams(BaseModel):
-    id: int
-    name: str
-    captainDiscordName: str
-    gitRepo: str
-    task: Optional[str] = None
-    location: str
-    preferredWorkTime: str
-    classificationLevel: str
-    preferredSkillsets: str
-    member: ReturnMember
-
-    class Config:
-        orm_mode = True
+class ReturnCreatedTeam(ReturnTeam):
+    captainCode: str
+    pass
 
 class UpdateTeam(BaseModel):
-    name: Optional[str] = None
+    name: Optional[str] = Field(default=...)
     captainCode: str
-    captainDiscordName: Optional[str] = None
-    gitRepo: Optional[str] = None
-    task: Optional[str] = None
-    location: Optional[str] = None
-    preferredWorkTime: Optional[str] = None
-    classificationLevel: Optional[str] = None
-    preferredSkillsets: Optional[str] = None
-    member: Optional[ReturnMember] = None
+    captainDiscordName: Optional[str] = Field(default=...)
+    gitRepo: Optional[str] = Field(default=...)
+    task: Optional[str] = Field(default=...)
+    location: Optional[str] = Field(default=...)
+    preferredWorkTime: Optional[str] = Field(default=...)
+    classificationLevel: Optional[str] = Field(default=...)
+    preferredSkillsets: Optional[str] = Field(default=...)
+    needsMembers: Optional[bool] = Field(default=...)
 
-class GetMember(BaseModel):
-    id: int
-    name: str
-    discordName: str
-    skillsets: str
-    teamName: Optional[ReturnTeam] = None
+class TeamsResponse(BaseModel):
+    team: ReturnTeam
+    member: ReturnMember
