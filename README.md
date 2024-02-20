@@ -1,12 +1,11 @@
 # Team-Builder
 
 ## Overview
-1. Create functions for updating, joining
+1. Create functions for updating
     - tasks
     - teams
 2. Postgres setup (Alembic)
-3. fix updateTeams
-4. Remove team from task/Complete task
-5. Create removal/completion logic for task
+3. Remove team from task/Complete task
+4. Create removal/completion logic for task
 
 ## How To Run

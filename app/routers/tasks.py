@@ -74,7 +74,7 @@ def deleteTask(id: int, request_body: schemas.DeleteTask = Body(...), db: Sessio
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 # Join a task
-# Remake
+# add update to models.Teams.task
 @router.post("/{id}/join", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnTeam)
 def joinTask(id: int, join: schemas.JoinTask, db: Session = Depends(get_db)):
     task = db.query(models.Tasks).filter(models.Tasks.id == id).first()

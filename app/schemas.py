@@ -19,7 +19,6 @@ class CreateTask(BaseModel):
 
 class DeleteTask(BaseModel):
     taskCode: str
-    task_id: int
 
 class UpdateTask(BaseModel):
     taskCode: str
@@ -111,10 +110,6 @@ class UpdateTeam(BaseModel):
     classificationLevel: Optional[str] = Field(default=...)
     preferredSkillsets: Optional[str] = Field(default=...)
     needsMembers: Optional[bool] = Field(default=...)
-
-class TeamsResponse(BaseModel):
-    Team: ReturnTeam
-    Member: ReturnMember
 
 class ReturnTask(BaseModel):
     id: int
