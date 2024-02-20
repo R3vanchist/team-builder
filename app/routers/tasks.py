@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body
+y gave andy the blue role? ly gave andy the blue role? lfrom fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 import random
@@ -16,7 +16,13 @@ router = APIRouter(
 # Get all tasks
 @router.get("/", response_model=List[schemas.ReturnTask])
 def getTasks(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    tasks = db.query(models.Tasks).options(joinedload(models.Tasks.teams)).all()
+    query = db.query(models.Tasks).options(joinedload(models.Tasks.teams))
+    if search:
+        tasks = query.filter(models.Tasks.preferredSkillsets.contains(search)).limit(limit).offset(skip).all()
+        return tasks
+    else:
+        tasks = query.all()
+        return tasks
     return tasks
 
 # Get tasks by id
