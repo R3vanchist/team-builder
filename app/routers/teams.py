@@ -56,7 +56,6 @@ def createTeam(team: schemas.CreateTeam, db: Session = Depends(get_db)):
     return newTeam 
 
 # Update team by id 
-# Broken
 @router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.ReturnTeam)
 def update_team(id: int, update: schemas.UpdateTeam, db: Session = Depends(get_db)):
     teamName= db.query(models.Teams.name).filter(models.Teams.id == id).first()

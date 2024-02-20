@@ -27,8 +27,8 @@ def getTasks(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, sear
 # Get completed tasks
 # update the response model
 @router.get("/completed", response_model=schemas.ReturnTask)
-def getCompleted(db: Session = Depends(get_db)):
-    completedTask = db.query(models.Tasks).filter(models.Tasks.isCompleted == 'true').all()
+def getCompleted(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    completedTask = db.query(models.Tasks).filter(models.Tasks.isCompleted == 'true').filter(models.Tasks.preferredSkillsets.contains(search)).limit(limit).offset(skip).all()
     return completedTask
 
 # Get tasks by id
