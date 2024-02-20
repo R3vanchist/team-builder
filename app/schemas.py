@@ -22,6 +22,7 @@ class DeleteTask(BaseModel):
     task_id: int
 
 class ReturnTask(BaseModel):
+    id: int
     description: str
     classificationLevel: str
     preferredSkillsets: str
@@ -31,6 +32,7 @@ class ReturnTask(BaseModel):
     pocName: str
     pocDiscordName: str
     hasData: bool
+    team_id: Optional[int] = None
     class Config:
         orm_mode = True
 
@@ -130,5 +132,9 @@ class UpdateTeam(BaseModel):
     needsMembers: Optional[bool] = Field(default=...)
 
 class TeamsResponse(BaseModel):
-    team: ReturnTeam
-    member: ReturnMember
+    Team: ReturnTeam
+    Member: ReturnMember
+
+class ReturnTaskAndTeams(BaseModel):
+    tasks: ReturnTask
+    teams: ReturnTeam

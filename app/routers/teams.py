@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 import random
 import string
@@ -14,35 +14,21 @@ router = APIRouter(
 )
 
 # Get all teams
-@router.get("/", response_model=List[schemas.TeamsResponse])
+# Set up schema
+#@router.get("/", response_model=schemas.TeamsResponse)
+@router.get("/")
 def getTeams(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    query = db.query(models.Teams, models.Members).join(models.Members, models.Members.team_id == models.Teams.id, isouter=True).filter(models.Teams.name.contains(search)).limit(limit).offset(skip)
-    results = query.all()
-    # Serialize results into a list of dictionaries
-    teams = []
-    for team, member in results:
-        team_data = {column.name: getattr(team, column.name) for column in team.__table__.columns}
-        member_data = {column.name: getattr(member, column.name) for column in member.__table__.columns if member is not None}
-        teams.append({"team": team_data, "member": member_data})
-
-    # At this point, serialized_teams is a list of dictionaries that can be easily converted to JSON
+    teams = db.query(models.Teams).options(joinedload(models.Teams.members)).all()
     return teams
+
 
 # Get team by id
-@router.get("/{id}", response_model=List[schemas.TeamsResponse])
+# Update schema
+#@router.get("/{id}", response_model=List[schemas.TeamsResponse])
+@router.get("/{id}")
 def getTeam(id: int, db: Session = Depends(get_db)):
-    query = db.query(models.Teams, models.Members).join(models.Members, models.Members.team_id == models.Teams.id, isouter=True).where(models.Teams.id == id)
-    results = query.all()
-    # Serialize results into a list of dictionaries
-    teams = []
-    for team, member in results:
-        team_data = {column.name: getattr(team, column.name) for column in team.__table__.columns}
-        member_data = {column.name: getattr(member, column.name) for column in member.__table__.columns if member is not None}
-        teams.append({"team": team_data, "member": member_data})
-
-    if not teams:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Team with id: {id} does not exist.")
-    return teams
+    team = db.query(models.Teams).options(joinedload(models.Teams.members)).filter(models.Teams.id == id).first()
+    return team
 
 # Create teams
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnCreatedTeam)
@@ -77,10 +63,10 @@ def update_team(id: int, updateTeam: schemas.UpdateTeam, db: Session = Depends(g
     captainCode = captainCodeResult[0]
     updateData = updateTeam.dict(exclude_unset=True)
     if updateTeam:
-        db.query(models.Team).filter(models.Teams.id == id).update(updateData)
-    team = db.query(models.Team).filter(models.Teams.id == id).first()
+        db.query(models.Teams).filter(models.Teams.id == id).update(updateData)
+    team = db.query(models.Teams).filter(models.Teams.id == id).first()
     if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")
     if captainCode != updateTeam.captainCode:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")

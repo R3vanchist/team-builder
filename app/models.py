@@ -10,6 +10,7 @@ class Tasks(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
+    team_id = Column(Integer, nullable=True)
     description = Column(String, nullable=False)
     classificationLevel = Column(String, nullable=False)
     preferredSkillsets = Column(String, nullable=False)
@@ -22,6 +23,7 @@ class Tasks(Base):
     taskCode = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
+    teams = relationship("Teams", back_populates="tasks")
 
 
 class Teams(Base):
@@ -39,7 +41,8 @@ class Teams(Base):
                         nullable=False, server_default=text('now()'))
     captainCode = Column(String, nullable=True, unique=True)
     task_id = Column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)
-    task = relationship("Tasks")
+    tasks = relationship("Tasks", back_populates="teams")
+    members = relationship("Members", back_populates="teams")
 
 
 class Members(Base):
@@ -51,4 +54,4 @@ class Members(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     team_id = Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False)
-    team = relationship("Teams")
+    teams = relationship("Teams", back_populates="members")

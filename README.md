@@ -8,5 +8,6 @@
 3. fix updateTeams
 4. Remove team from task/Complete task
 5. Create removal/completion logic for task
+6. instead of fk on id, fk on names...?
 
 ## How To Run
