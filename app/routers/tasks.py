@@ -48,7 +48,7 @@ def createTasks(task: schemas.CreateTask, db: Session = Depends(get_db)):
     return newTask
 
 # Update task by id 
-# need to make
+# need to make, add completed button
 @router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UpdateTask)
 def updateTasks():
     return {"Hello": "World"}
@@ -90,3 +90,9 @@ def joinTask(id: int, join: schemas.JoinTask, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(team)
         return team
+
+# Get completed tasks
+@router.get("/completed")
+def getCompleted(db: Session = Depends(get_db)):
+    completedTask = db.query(models.Tasks).filter(models.Tasks.isCompleted == 'TRUE').all()
+    return completedTask
