@@ -20,17 +20,21 @@ class CreateTask(BaseModel):
 class DeleteTask(BaseModel):
     taskCode: str
 
+class UpdateItem(BaseModel):
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    classificationLevel: Optional[str] = None,
+    preferredSkillsets: Optional[str] = None,
+    desiredDeliverable: Optional[str] = None,
+    organization: Optional[str] = None,
+    location: Optional[str] = None,
+    pocName: Optional[str] = None,
+    pocDiscordName: Optional[str] = None,
+    hasData: Optional[bool] = False
+
 class UpdateTask(BaseModel):
     taskCode: str
-    description: Optional[str] = None
-    classificationLevel: Optional[str] = None
-    preferredSkillsets: Optional[str] = None
-    desiredDeliverable: Optional[str] = None
-    organization: Optional[str] = None
-    location: Optional[str] = None
-    pocName: Optional[str] = None
-    pocDiscordName: Optional[str] = None
-    dataSupplied: Optional[bool] = None
+    updates: List[UpdateItem] = []
 
 class JoinTask(BaseModel):
     team_id: int
