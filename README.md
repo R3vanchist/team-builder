@@ -6,6 +6,7 @@
     - teams
 2. Postgres setup (Alembic)
 3. Create taskCompleted function, if taskCompleted func called then update isCompleted to true
-4. Create requirements.txt
+4. Add tags for skillsets
+5. Create requirements.txt
 
 ## How To Run
