@@ -65,14 +65,8 @@ def updateTask(id: int, update: schemas.UpdateList = Body(...), db: Session = De
 
     if taskCode == update.taskCode:
         # Iterate over each update item in the list
-        for updateItem in update.updates:
-            # Check if the attribute exists on the task object to prevent arbitrary attribute assignments
-            if hasattr(task, updateItem.key):
-                # Set the attribute to the new value
-                setattr(task, updateItem.key, updateItem.value)
-            else:
-                # Handle cases where an invalid key is provided
-                raise HTTPException(status_code=400, detail=f"Attribute {updateItem.key} not found on Task")
+        for field, value in update_data.dict(exclude_unset=True).items():
+            setattr(task, field, value) if value is not None else None
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Task code was invalid.")
 
