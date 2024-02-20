@@ -54,10 +54,31 @@ def createTasks(task: schemas.CreateTask, db: Session = Depends(get_db)):
     return newTask
 
 # Update task by id 
-# need to make, add completed button
-@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UpdateTask)
-def updateTasks():
-    return {"Hello": "World"}
+@router.patch("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.ReturnTask)
+def updateTask(id: int, update: schemas.UpdateList = Body(...), db: Session = Depends(get_db)):
+    taskName= db.query(models.Task.name).filter(models.Task.id == id).first()
+    taskCode = db.query(models.Task.taskCode).filter(models.Task.id == id).first()
+    task = db.query(models.Task).filter(models.Task.id == id).first()
+    
+    if not task:
+        raise HTTPException(status_code=404, detail=f"{taskName} not found")
+
+    if taskCode == update.taskCode:
+        # Iterate over each update item in the list
+        for updateItem in update.updates:
+            # Check if the attribute exists on the task object to prevent arbitrary attribute assignments
+            if hasattr(task, updateItem.key):
+                # Set the attribute to the new value
+                setattr(task, updateItem.key, updateItem.value)
+            else:
+                # Handle cases where an invalid key is provided
+                raise HTTPException(status_code=400, detail=f"Attribute {updateItem.key} not found on Task")
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Task code was invalid.")
+
+    db.commit()
+    db.refresh(task)
+    return task
 
 # Delete a task
 @router.put("/delete/{id}", status_code=status.HTTP_204_NO_CONTENT)
