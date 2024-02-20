@@ -14,18 +14,14 @@ router = APIRouter(
 )
 
 # Get all teams
-# Set up schema
-#@router.get("/", response_model=schemas.TeamsResponse)
-@router.get("/")
+@router.get("/", response_model=List[schemas.ReturnTeam])
 def getTeams(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     teams = db.query(models.Teams).options(joinedload(models.Teams.members)).all()
     return teams
 
 
 # Get team by id
-# Update schema
-#@router.get("/{id}", response_model=List[schemas.TeamsResponse])
-@router.get("/{id}")
+@router.get("/{id}", response_model=schemas.ReturnTeam)
 def getTeam(id: int, db: Session = Depends(get_db)):
     team = db.query(models.Teams).options(joinedload(models.Teams.members)).filter(models.Teams.id == id).first()
     return team

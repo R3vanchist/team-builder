@@ -14,17 +14,13 @@ router = APIRouter(
 )
 
 # Get all tasks
-# Update schema
-# @router.get("/", response_model=List[schemas.ReturnTaskAndTeams])
-@router.get("/")
+@router.get("/", response_model=List[schemas.ReturnTask])
 def getTasks(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     tasks = db.query(models.Tasks).options(joinedload(models.Tasks.teams)).all()
     return tasks
 
 # Get tasks by id
-# Update schema
-# @router.get("/{id}", response_model=schemas.ReturnTaskAndTeams)
-@router.get("/{id}")
+@router.get("/{id}", response_model=schemas.ReturnTask)
 def getTasks(id: int, db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     taskQuery = db.query(models.Tasks).where(models.Tasks.id == id).first()
     if taskQuery is None:

@@ -21,25 +21,6 @@ class DeleteTask(BaseModel):
     taskCode: str
     task_id: int
 
-class ReturnTask(BaseModel):
-    id: int
-    description: str
-    classificationLevel: str
-    preferredSkillsets: str
-    desiredDeliverable: str
-    organization: str
-    location: str
-    pocName: str
-    pocDiscordName: str
-    hasData: bool
-    team_id: Optional[int] = None
-    class Config:
-        orm_mode = True
-
-class ReturnCreatedTask(ReturnTask):
-    taskCode: str
-    pass
-
 class UpdateTask(BaseModel):
     taskCode: str
     description: Optional[str] = None
@@ -67,7 +48,6 @@ class ReturnMember(BaseModel):
     discordName: str
     skillsets: str
     team_id: int
-    teamName: Optional[str] = None
     class Config:
         orm_mode = True
 
@@ -89,6 +69,7 @@ class ReturnTeam(BaseModel):
     classificationLevel: str
     preferredSkillsets: str
     needsMembers: bool
+    members: List[ReturnMember] = []
     class Config:
         orm_mode = True
 
@@ -135,6 +116,21 @@ class TeamsResponse(BaseModel):
     Team: ReturnTeam
     Member: ReturnMember
 
-class ReturnTaskAndTeams(BaseModel):
-    tasks: ReturnTask
-    teams: ReturnTeam
+class ReturnTask(BaseModel):
+    id: int
+    description: str
+    classificationLevel: str
+    preferredSkillsets: str
+    desiredDeliverable: str
+    organization: str
+    location: str
+    pocName: str
+    pocDiscordName: str
+    hasData: bool
+    teams: List[ReturnTeam] = []
+    class Config:
+        orm_mode = True
+
+class ReturnCreatedTask(ReturnTask):
+    taskCode: str
+    pass
