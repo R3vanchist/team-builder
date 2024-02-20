@@ -23,6 +23,7 @@ class Tasks(Base):
     taskCode = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
+    isCompleted = Column(Boolean, server_default='FALSE', nullable=False)
     teams = relationship("Teams", back_populates="tasks")
 
 
