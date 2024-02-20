@@ -16,7 +16,13 @@ router = APIRouter(
 # Get all teams
 @router.get("/", response_model=List[schemas.ReturnTeam])
 def getTeams(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    teams = db.query(models.Teams).options(joinedload(models.Teams.members)).all()
+    query = db.query(models.Teams).options(joinedload(models.Teams.members))
+    if search:
+        teams = query.filter(models.Teams.preferredSkillsets.contains(search)).limit(limit).offset(skip).all()
+        return teams
+    else:
+        teams = query.all()
+        return teams
     return teams
 
 
