@@ -1,4 +1,4 @@
-y gave andy the blue role? ly gave andy the blue role? lfrom fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 import random
@@ -23,7 +23,13 @@ def getTasks(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, sear
     else:
         tasks = query.all()
         return tasks
-    return tasks
+
+# Get completed tasks
+# update the response model
+@router.get("/completed", response_model=schemas.ReturnTask)
+def getCompleted(db: Session = Depends(get_db)):
+    completedTask = db.query(models.Tasks).filter(models.Tasks.isCompleted == 'true').all()
+    return completedTask
 
 # Get tasks by id
 @router.get("/{id}", response_model=schemas.ReturnTask)
@@ -35,7 +41,7 @@ def getTasks(id: int, db: Session = Depends(get_db), limit: int = 10, skip: int 
         task = db.query(models.Tasks).options(joinedload(models.Tasks.teams)).filter(models.Tasks.id == id).first()
     return task
 
-# Create taks
+# Create tasks
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnCreatedTask)
 def createTasks(task: schemas.CreateTask, db: Session = Depends(get_db)):
     # Function to generate a taskCode
@@ -54,25 +60,25 @@ def createTasks(task: schemas.CreateTask, db: Session = Depends(get_db)):
     return newTask
 
 # Update task by id 
+# update the schema for response model, need to pull isCompleted
 @router.patch("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.ReturnTask)
-def updateTask(id: int, update: schemas.UpdateList = Body(...), db: Session = Depends(get_db)):
-    taskName= db.query(models.Task.name).filter(models.Task.id == id).first()
-    taskCode = db.query(models.Task.taskCode).filter(models.Task.id == id).first()
-    task = db.query(models.Task).filter(models.Task.id == id).first()
-    
-    if not task:
+def updateTask(id: int, update: schemas.UpdateTask = Body(...), db: Session = Depends(get_db)):
+    taskName= db.query(models.Tasks.name).filter(models.Tasks.id == id).first()
+    taskCode = db.query(models.Tasks.taskCode).filter(models.Tasks.id == id).first()
+    taskQuery = db.query(models.Tasks).filter(models.Tasks.id == id)
+    taskUpdate = update.dict(exclude_unset=True, exclude_none=True)
+    task = taskQuery.first()
+
+    if task == None:
         raise HTTPException(status_code=404, detail=f"{taskName} not found")
-
-    if taskCode == update.taskCode:
-        # Iterate over each update item in the list
-        for field, value in update_data.dict(exclude_unset=True).items():
-            setattr(task, field, value) if value is not None else None
-    else:
+    
+    if taskCode[0] != update.taskCode:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Task code was invalid.")
-
-    db.commit()
-    db.refresh(task)
-    return task
+    else:
+        taskQuery.update(taskUpdate)
+        db.commit()
+        
+        return task
 
 # Delete a task
 @router.put("/delete/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -95,8 +101,7 @@ def deleteTask(id: int, request_body: schemas.DeleteTask = Body(...), db: Sessio
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 # Join a task
-# add update to models.Teams.task
-@router.post("/{id}/join", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnTeam)
+@router.post("/{id}/join", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnTask)
 def joinTask(id: int, join: schemas.JoinTask, db: Session = Depends(get_db)):
     task = db.query(models.Tasks).filter(models.Tasks.id == id).first()
     team = db.query(models.Teams).filter(models.Teams.id == join.team_id).first()
@@ -110,10 +115,4 @@ def joinTask(id: int, join: schemas.JoinTask, db: Session = Depends(get_db)):
         team.task_id = id
         db.commit()
         db.refresh(team)
-        return team
-
-# Get completed tasks
-@router.get("/completed")
-def getCompleted(db: Session = Depends(get_db)):
-    completedTask = db.query(models.Tasks).filter(models.Tasks.isCompleted == 'TRUE').all()
-    return completedTask
+        return task

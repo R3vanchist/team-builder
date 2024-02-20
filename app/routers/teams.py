@@ -23,7 +23,6 @@ def getTeams(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, sear
     else:
         teams = query.all()
         return teams
-    return teams
 
 
 # Get team by id
@@ -58,24 +57,24 @@ def createTeam(team: schemas.CreateTeam, db: Session = Depends(get_db)):
 
 # Update team by id 
 # Broken
-@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.UpdateTeam)
-def update_team(id: int, updateTeam: schemas.UpdateTeam, db: Session = Depends(get_db)):
-    captainCodeQuery = db.query(models.Teams.captainCode).filter(models.Teams.id == id)
-    captainCodeResult = captainCodeQuery.first()
-    captainCode = captainCodeResult[0]
-    updateData = updateTeam.dict(exclude_unset=True)
-    if updateTeam:
-        db.query(models.Teams).filter(models.Teams.id == id).update(updateData)
-    team = db.query(models.Teams).filter(models.Teams.id == id).first()
-    if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found")
-    if captainCode != updateTeam.captainCode:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Not authorized to perform requested action")
-    updateData.update(updateTeam.dict(), synchronize_session=False)
+@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.ReturnTeam)
+def update_team(id: int, update: schemas.UpdateTeam, db: Session = Depends(get_db)):
+    teamName= db.query(models.Teams.name).filter(models.Teams.id == id).first()
+    captainCode = db.query(models.Teams.captainCode).filter(models.Teams.id == id).first()
+    teamQuery = db.query(models.Teams).filter(models.Teams.id == id)
+    teamUpdate = update.dict(exclude_unset=True, exclude_none=True)
+    team = teamQuery.first()
 
-    db.commit()
-    return team 
+    if team == None:
+        raise HTTPException(status_code=404, detail=f"{teamName} not found")
+    
+    if captainCode[0] != update.captainCode:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Captain code was invalid.")
+    else:
+        teamQuery.update(teamUpdate)
+        db.commit()
+        
+        return team
 
 
 # Delete a team

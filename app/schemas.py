@@ -20,21 +20,19 @@ class CreateTask(BaseModel):
 class DeleteTask(BaseModel):
     taskCode: str
 
-class UpdateItem(BaseModel):
-    name: Optional[str] = None,
-    description: Optional[str] = None,
-    classificationLevel: Optional[str] = None,
-    preferredSkillsets: Optional[str] = None,
-    desiredDeliverable: Optional[str] = None,
-    organization: Optional[str] = None,
-    location: Optional[str] = None,
-    pocName: Optional[str] = None,
-    pocDiscordName: Optional[str] = None,
-    hasData: Optional[bool] = False
-
 class UpdateTask(BaseModel):
     taskCode: str
-    updates: List[UpdateItem] = []
+    name: Optional[str] = None
+    description: Optional[str] = None
+    classificationLevel: Optional[str] = None
+    preferredSkillsets: Optional[str] = None
+    desiredDeliverable: Optional[str] = None
+    organization: Optional[str] = None
+    location: Optional[str] = None
+    pocName: Optional[str] = None
+    pocDiscordName: Optional[str] = None
+    hasData: Optional[bool] = None
+    isCompleted: Optional[bool] = None
 
 class JoinTask(BaseModel):
     team_id: int
@@ -104,19 +102,20 @@ class ReturnCreatedTeam(ReturnTeam):
     pass
 
 class UpdateTeam(BaseModel):
-    name: Optional[str] = Field(default=...)
+    name: Optional[str] = None
     captainCode: str
-    captainDiscordName: Optional[str] = Field(default=...)
-    gitRepo: Optional[str] = Field(default=...)
-    task: Optional[str] = Field(default=...)
-    location: Optional[str] = Field(default=...)
-    preferredWorkTime: Optional[str] = Field(default=...)
-    classificationLevel: Optional[str] = Field(default=...)
-    preferredSkillsets: Optional[str] = Field(default=...)
-    needsMembers: Optional[bool] = Field(default=...)
+    captainDiscordName: Optional[str] = None
+    gitRepo: Optional[str] = None
+    task: Optional[str] = None
+    location: Optional[str] = None
+    preferredWorkTime: Optional[str] = None
+    classificationLevel: Optional[str] = None
+    preferredSkillsets: Optional[str] = None
+    needsMembers: Optional[bool] = None
 
 class ReturnTask(BaseModel):
     id: int
+    name: str
     description: str
     classificationLevel: str
     preferredSkillsets: str
@@ -126,6 +125,7 @@ class ReturnTask(BaseModel):
     pocName: str
     pocDiscordName: str
     hasData: bool
+    isCompleted: bool
     teams: List[ReturnTeam] = []
     class Config:
         orm_mode = True
