@@ -76,7 +76,6 @@ class ReturnTeam(BaseModel):
 
 class DeleteTeam(BaseModel):
     captainCode: str
-    team_id: int
 
 class CreateTeam(BaseModel):
     name: str
