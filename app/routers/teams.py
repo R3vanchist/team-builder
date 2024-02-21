@@ -36,7 +36,7 @@ async def getTeamPicture(id: int,db: Session = Depends(get_db)):
     image_record = db.query(models.TeamPictures).filter(models.TeamPictures.id == id)
     if not image_record:
         pass
-    return Response(content=image_record.image_data, media_type="image/jpeg")
+    return Response(content=image_record.team, media_type="image/jpeg")
 
 
 # Get team by id
