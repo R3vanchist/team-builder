@@ -1,7 +1,19 @@
 from fastapi import FastAPI
 from .routers import members, tasks, teams
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = ["localhost"]
+methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=methods,
+    allow_headers=["*"],
+)
 
 app.include_router(tasks.router)
 app.include_router(teams.router)
