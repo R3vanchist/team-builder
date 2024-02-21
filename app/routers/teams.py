@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body
+from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body, File, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 import random
@@ -7,11 +8,15 @@ from sqlalchemy import func, select, text
 from sqlalchemy.sql.functions import func
 from .. import models, schemas
 from ..database import get_db
+from random import randint
 
 router = APIRouter(
     prefix="/teams",
     tags=['Teams']
 )
+
+ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"]
+MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
 # Get all teams
 @router.get("/", response_model=List[schemas.ReturnTeam])
@@ -23,6 +28,15 @@ def getTeams(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, sear
     else:
         teams = query.all()
         return teams
+
+
+# Get teams photo
+@router.get("/images/upload/{id}")
+async def getTeamPicture(id: int,db: Session = Depends(get_db)):
+    image_record = db.query(models.TeamPictures).filter(models.TeamPictures.id == id)
+    if not image_record:
+        pass
+    return Response(content=image_record.image_data, media_type="image/jpeg")
 
 
 # Get team by id
@@ -55,6 +69,24 @@ def createTeam(team: schemas.CreateTeam, db: Session = Depends(get_db)):
     db.refresh(newMember)
     return newTeam 
 
+# Upload team photo
+@router.post("/images/upload/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def uploadTeams(id: int, photo: UploadFile = File(...), db: Session = Depends(get_db)):
+    contents = await photo.read()
+    if len(contents) > MAX_IMAGE_SIZE:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=f"Image was too big.")
+    if photo.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Image file not valid.")
+    
+    teamName = db.query(models.Teams.name).filter(models.Teams.id == id).first()
+    team = db.query(models.Teams).filter(models.Teams.id == id).first()
+    if not team:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{teamName} not found.")
+    new_image = models.TeamPictures(id=id, image_data=contents)
+    db.add(new_image)
+    db.commit()
+    return {"message": "Image successfully uploaded"}
+
 # Update team by id 
 @router.put("/{id}", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.ReturnTeam)
 def update_team(id: int, update: schemas.UpdateTeam, db: Session = Depends(get_db)):
@@ -78,7 +110,7 @@ def update_team(id: int, update: schemas.UpdateTeam, db: Session = Depends(get_d
 
 # Delete a team
 @router.put("/delete/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def deleteMember(id: int, request_body: schemas.DeleteTeam = Body(...), db: Session = Depends(get_db)):
+def deleteTeam(id: int, request_body: schemas.DeleteTeam = Body(...), db: Session = Depends(get_db)):
     teamQuery = db.query(models.Teams).filter(models.Teams.id == id)
     team = teamQuery.first()
 

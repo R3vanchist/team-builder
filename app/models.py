@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy_imageattach.entity import Image, image_attachment
 
 from .database import Base
 
@@ -23,6 +24,7 @@ class Tasks(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     isCompleted = Column(Boolean, server_default='FALSE', nullable=False)
+    picture = image_attachment('TaskPicture')
     teams = relationship("Teams", back_populates="tasks")
 
 
@@ -41,6 +43,7 @@ class Teams(Base):
                         nullable=False, server_default=text('now()'))
     captainCode = Column(String, nullable=True, unique=True)
     task_id = Column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)
+    picture = image_attachment('TeamPicture')
     tasks = relationship("Tasks", back_populates="teams")
     members = relationship("Members", back_populates="teams")
 
@@ -55,3 +58,13 @@ class Members(Base):
                         nullable=False, server_default=text('now()'))
     team_id = Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False)
     teams = relationship("Teams", back_populates="members")
+
+class TaskPictures(Base, Image):
+    __tablename__ = 'taskPictures'
+    id = Column(Integer, ForeignKey("tasks.id"), primary_key=True)
+    task = relationship("Tasks")
+
+class TeamPictures(Base, Image):
+    __tablename__ = "teamPictures"
+    id = Column(Integer, ForeignKey("teams.id"), primary_key=True)
+    team = relationship("Teams")

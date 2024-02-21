@@ -33,7 +33,7 @@ def getCompleted(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, 
 
 # Get tasks by id
 @router.get("/{id}", response_model=schemas.ReturnTask)
-def getTasks(id: int, db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+def getTask(id: int, db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     taskQuery = db.query(models.Tasks).where(models.Tasks.id == id).first()
     if taskQuery is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Task with id: {id} not found.")
