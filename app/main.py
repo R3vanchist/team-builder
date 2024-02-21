@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-origins = ["localhost"]
+origins = ["*"]
 methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
 app.add_middleware(
@@ -21,4 +21,4 @@ app.include_router(members.router)
 
 @app.get("/")
 def read():
-    return {"Hello": "World"}
+    return {"Message": "Welcome to the Team Builder API"}
