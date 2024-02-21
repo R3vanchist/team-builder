@@ -82,7 +82,7 @@ class CreateTeam(BaseModel):
     name: str
     captainDiscordName: Optional[str] = None 
     gitRepo: str
-    task: Optional[str] = None
+    #task: Optional[str] = None
     location: str
     preferredWorkTime: str
     classificationLevel: str
