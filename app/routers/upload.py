@@ -21,11 +21,14 @@ IMAGEDIR = "../images/"
 
 @router.post("/teams")
 async def uploadTeams(photo: UploadFile = File(...), db: Session = Depends(get_db)):
-    photo.filename = f"{uuid.uuid4()}.jpg"
     contents = await photo.read()
-    with open(f"{IMAGEDIR}{photo.filename}", "wb") as f:
-        f.write(contents)
-    return {"Image succesfully uploaded": photo.filename}
+    image_id = str(uuid.uuid4())
+    # Create a new image instance with binary data
+    new_image = Images(id=image_id, image_data=contents)
+    db.add(new_image)
+    db.commit()
+    
+    return {"message": "Image successfully uploaded", "image_id": image_id}
 
 @router.get("/show/")
 async def showTeams():
