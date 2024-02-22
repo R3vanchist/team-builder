@@ -23,6 +23,7 @@ class Tasks(Base):
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text('now()'))
     isCompleted = Column(Boolean, server_default='FALSE', nullable=False)
+    pictureName = Column(String, nullable=True)
     teams = relationship("Teams", back_populates="tasks")
 
 
@@ -41,6 +42,7 @@ class Teams(Base):
                         nullable=False, server_default=text('now()'))
     captainCode = Column(String, nullable=True, unique=True)
     task_id = Column(Integer, ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True)
+    pictureName = Column(String, nullable=True)
     tasks = relationship("Tasks", back_populates="teams")
     members = relationship("Members", back_populates="teams")
 

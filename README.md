@@ -1,9 +1,5 @@
 # Team-Builder
 
-## Overview
-1. Start tying in frontend
-2. figure out photo upload
-
 ## How To Run
 1. Once you have cloned the repo, move into the team-builder foler and create a virtual environment
 2. Run ```python3 -m venv venv```

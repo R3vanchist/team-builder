@@ -1,10 +1,11 @@
 from fastapi import FastAPI
-from .routers import images, members, tasks, teams
+from .routers import members, tasks, teams
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 app = FastAPI()
 
+# Set Origins to only be frontend http://ip address:port
 origins = ["*"]
 methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
@@ -19,7 +20,6 @@ app.add_middleware(
 app.include_router(tasks.router)
 app.include_router(teams.router)
 app.include_router(members.router)
-app.include_router(images.router)
 
 @app.get("/")
 def read():

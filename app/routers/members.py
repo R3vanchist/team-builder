@@ -14,14 +14,14 @@ router = APIRouter(
 
 # Get all members
 @router.get("/", response_model=List[schemas.ReturnMember])
-def getMembers(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+def get_members(db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     members = db.query(models.Members).filter(models.Members.name.contains(search)).limit(limit).offset(skip).all()
 
     return members
 
 # Get members by id
 @router.get("/{id}", response_model=schemas.ReturnMember)
-def getMember(id: int, db: Session = Depends(get_db)):
+def get_member(id: int, db: Session = Depends(get_db)):
     member = db.query(models.Members).filter(models.Members.id == id).first()
     teamNameQuery = db.query(models.Teams.name).join(models.Members, models.Members.team_id == models.Teams.id, isouter=True).first()
     teamName = teamNameQuery[0]
@@ -35,7 +35,7 @@ def getMember(id: int, db: Session = Depends(get_db)):
 
 # Delete a member
 @router.put("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def deleteMember(id: int, request_body: schemas.DeleteTeam = Body(...), db: Session = Depends(get_db)):
+def delete_member(id: int, request_body: schemas.DeleteTeam = Body(...), db: Session = Depends(get_db)):
     memberQuery = db.query(models.Members).filter(models.Members.id == id)
     member = memberQuery.first()
 
