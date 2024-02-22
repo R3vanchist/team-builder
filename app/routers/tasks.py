@@ -160,7 +160,7 @@ def delete_task(id: int, request_body: schemas.DeleteTask = Body(...), db: Sessi
 @router.post("/{id}/join", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnTask)
 def join_task(id: int, join: schemas.JoinTask, db: Session = Depends(get_db)):
     task = db.query(models.Tasks).filter(models.Tasks.id == id).first()
-    team = db.query(models.Teams).filter(models.Teams.id == join.team_id).first()
+    team = db.query(models.Teams).filter(models.Teams.name == join.team_name).first()
     captainCode = team.captainCode
     print(captainCode)
     print(join.captainCode)

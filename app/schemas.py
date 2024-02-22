@@ -36,7 +36,7 @@ class UpdateTask(BaseModel):
 
 class JoinTask(BaseModel):
     captainCode: str
-    team_id: int
+    team_name: str
 
 # Members
 class CreateMember(BaseModel):
