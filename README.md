@@ -6,7 +6,7 @@
 3. Run ```source venv/bin/activate``` 
 4. Run ```pip install -r requirements```
 5. Create an .env file with:
-    DATABASE_HOSTNAME
+    DATABASE_HOSTNAME=
     DATABASE_PORT=
     DATABASE_PASSWORD=
     DATABASE_NAME=
