@@ -9,7 +9,7 @@ from .database import Base
 class Tasks(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False)
     classificationLevel = Column(String, nullable=False)
     preferredSkillsets = Column(String, nullable=False)
@@ -30,7 +30,7 @@ class Tasks(Base):
 class Teams(Base):
     __tablename__ = "teams"
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     captainDiscordName = Column(String, nullable=False)
     gitRepo = Column(String, nullable=True)
     location = Column(String, nullable=False)
