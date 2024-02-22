@@ -17,4 +17,4 @@
     DATABASE_USERNAME=
 6. If you need to create the database, if not skip to step 8, run ```alembic revision --autogenerate -m "creating tables"```
 7. Run ```alembic upgrade head```
-8. Run ```app.main:app --port 3000```
+8. Run ```uvicorn app.main:app --port 3000```

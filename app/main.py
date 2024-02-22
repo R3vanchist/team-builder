@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import members, tasks, teams, upload
+from .routers import images, members, tasks, teams
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -19,7 +19,7 @@ app.add_middleware(
 app.include_router(tasks.router)
 app.include_router(teams.router)
 app.include_router(members.router)
-app.include_router(upload.router)
+app.include_router(images.router)
 
 @app.get("/")
 def read():
