@@ -160,15 +160,16 @@ def delete_task(id: int, request_body: schemas.DeleteTask = Body(...), db: Sessi
 @router.post("/{id}/join", status_code=status.HTTP_201_CREATED, response_model=schemas.ReturnTask)
 def join_task(id: int, join: schemas.JoinTask, db: Session = Depends(get_db)):
     task = db.query(models.Tasks).filter(models.Tasks.id == id).first()
-    team = db.query(models.Teams).filter(models.Teams.id == join.team_id).first()
+    team = db.query(models.Teams).filter(models.Teams.name == join.team_name).first()
     if team is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Team was not found.")
     if team.task_id != None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Team is already assigned to a task, please delete previous task before selecting a new one.")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Team is already assigned to a task, please delete/complete previous task before selecting a new one.")
     if task is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Task id: {id} does not exist.")
-    else:
-        team.task_id = id
-        db.commit()
-        db.refresh(team)
-        return task
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{task} does not exist.")
+    if team.captainCode != join.captainCode:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"You have enterd the wrong captain code for {team}")
+    team.task_id = id
+    db.commit()
+    db.refresh(team)
+    return task

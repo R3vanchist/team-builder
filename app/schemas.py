@@ -35,7 +35,8 @@ class UpdateTask(BaseModel):
     isCompleted: Optional[bool] = None
 
 class JoinTask(BaseModel):
-    team_id: int
+    team_name: str
+    captainCode: str
 
 # Members
 class CreateMember(BaseModel):
