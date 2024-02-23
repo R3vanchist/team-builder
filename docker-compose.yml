@@ -3,7 +3,7 @@ services:
   api:
     image: r3vanchsit/team-builder
     ports:
-      - 8000:8000
+      - 3000:3000
     
     environment:
       - DATABASE_HOSTNAME=${DATABASE_HOSTNAME}
