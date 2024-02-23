@@ -1,29 +1,54 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter, Body, File, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session, joinedload
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import random
 import string
-from sqlalchemy import func, select, text
-from sqlalchemy.sql.functions import func
+import os
 from .. import models, schemas
 from ..database import get_db
-from random import randint
-import os
+from ..security import generate_filename
+
 
 router = APIRouter(
     prefix="/teams",
     tags=['Teams']
 )
-
+DISALLOWED_EXTENSIONS = ['.py', '.php', '.exe', '.sh']
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"]
 MAX_IMAGE_SIZE = 5 * 1024 * 1024
 # Change in production environment to something outside of the backends root directory
 IMAGEDIR = os.getcwd()
 
-def generate_filename(original_filename: str, teamName: str) -> str:
-    extension = original_filename.split('.')[-1]  # Extract the file extension
-    new_filename = f"{teamName}.{extension}"
+def contains_disallowed_extension(filename: str) -> bool:
+    filename_lower = filename.lower()
+    for ext in DISALLOWED_EXTENSIONS:
+        if ext in filename_lower:
+            return True
+    return False
+    
+def validate_upload_file(contents: bytes, photo: UploadFile) -> Tuple[bytes, str]:
+    if contents is None or len(contents) == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No file uploaded.")
+    if contains_disallowed_extension(photo.filename) == True:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"No, No, No!")
+    if len(contents) > MAX_IMAGE_SIZE:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=f"{photo.filename} is too large.")
+    if photo.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{photo.filename} file type is not valid.")
+    if ".." in photo.filename or photo.filename.startswith("/"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image name.")
+
+    return contents, photo.filename
+
+def save_image_to_disk(contents: bytes, filename: str, team_name: str) -> str:
+    image_dir = os.path.join(IMAGEDIR, f"images/{team_name}")
+    if not os.path.exists(image_dir):
+        os.makedirs(image_dir)
+    new_filename = generate_filename(filename, team_name)
+    file_path = os.path.join(image_dir, new_filename)
+    with open(file_path, "wb") as file:
+        file.write(contents)
     return new_filename
 
 # Get all teams
@@ -125,32 +150,14 @@ def delete_team(id: int, request_body: schemas.DeleteTeam = Body(...), db: Sessi
 async def upload_teams_photo(id: int, photo: UploadFile = File(...), db: Session = Depends(get_db)):
     team = db.query(models.Teams).filter(models.Teams.id == id).first()
     if not team:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Team not found.")
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Team not found")
     contents = await photo.read()
-    if contents is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No file uploaded.")
-    if len(contents) > MAX_IMAGE_SIZE:
-        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail=f"{photo.filename} is too large.")
-    if photo.content_type not in ALLOWED_IMAGE_TYPES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{photo.filename} file type is not valid.")
-    if ".." in photo.filename or photo.filename.startswith("/"):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image name.")
-    
-    image_dir = os.path.join(IMAGEDIR, f"images/{team.name}")
-
-    if not os.path.exists(image_dir):
-        os.makedirs(image_dir)
-
-    new_filename = generate_filename(photo.filename, team.name)
-    file_path = os.path.join(image_dir, new_filename)
+    validate_upload_file(contents, photo)
+    new_filename = save_image_to_disk(contents, photo.filename, team.name)
     team.pictureName = new_filename
     db.add(team)
     db.commit()
-    with open(file_path, "wb") as file:
-        file.write(contents)
-    
-    return {"detail": f"Successfully uploaded {new_filename} for team {team.name}."}
+    return {"detail": f"Successfully uploaded {photo.filename} for {team.name}"}
 
 # Create members
 @router.post("/{id}/join", status_code=status.HTTP_201_CREATED, response_model=schemas.CreateMember)
