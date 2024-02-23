@@ -75,14 +75,16 @@ def create_tasks(task: schemas.CreateTask, db: Session = Depends(get_db)):
         taskCode = ''.join(random.choice(chars) for _ in range(length))
         return taskCode
     taskCode = taskCodeGenerator(length=6)
+    existingTask = db.query(models.Tasks.name).all()
 
     # Create a new task entry
     newTaskData = task.dict()
     newTask = models.Tasks(**newTaskData, taskCode=taskCode)
     
     # Check to see if team already exists
-    if task.name == newTask.name:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Sorry, a team with name {newTask.name} already exists.")
+    for i in existingTask:
+        if task.name == i[0]:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Sorry, a team with name {newTask.name} already exists.")
     
     db.add(newTask)
     db.commit()

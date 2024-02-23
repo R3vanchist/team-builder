@@ -65,14 +65,17 @@ def create_team(team: schemas.CreateTeam, db: Session = Depends(get_db)):
         captainCode = ''.join(random.choice(chars) for _ in range(length))
         return captainCode
     captainCode = captainCodeGenerator(length=6)
+    existingTeams = db.query(models.Teams.name).all()
+
 
     # Create a new team entry
     newTeamData = team.dict(exclude={"captain"})
     newTeam = models.Teams(**newTeamData, captainCode=captainCode)
     
     # Check to see if team already exists
-    if team.name == newTeam.name:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Sorry, a team with name {newTeam.name} already exists.")
+    for i in existingTeams:
+        if team.name == i[0]:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Sorry, a team with name {team.name} already exists.")
     
     db.add(newTeam)
     db.commit()
